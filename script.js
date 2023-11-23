@@ -4,78 +4,76 @@ const board = {
     "b1" : "", "b2" : "", "b3" : "",
     "c1" : "", "c2" : "" ,"c3" : "" };
 
-const game = startGame();
-playGame();
-function gameInfo(turn, playerRole, computerRole) {
-    this.turn = turn;
-    this.playerRole = playerRole;
-    this.computerRole = computerRole;
+let playerRole = "";
+let computerRole = "";
+let turn = "";
+
+function setGameInfo() {
+    playerRole = prompt("What do you want to play as? ('x' or 'o'): ");
+    if (playerRole == "x") computerRole = "o";
+    else computerRole = "x";
+    
+    turn = prompt("Do you want to start first?: ('yes' or 'no'): ");
+    if (turn == "yes") turn = "player";
+    else turn = "computer";
 }
 
-function playGame() {
-    do {
-        console.log("in playGame()'s while, checkWinner() returns: " + checkWinner());
-        playRound();
+function doPlayerMove() {
+    let playerChoice = prompt("Enter to the grid:");
+
+    while (isViable(playerChoice) === false) {
+        console.log("Invalid move! Try again");
+        playerChoice = prompt("Enter to the grid:");
     }
-    while (checkWinner() === "No Winner");
+    board[playerChoice] = playerRole;
 }
 
-function startGame() {
-    let playerRole = prompt("Decide what you want to play('x' or 'o'):");
-    let computerRole = "";
-    if (playerRole == "x")
-        computerRole = "o";
-    else if (playerRole == "o")
-        computerRole = "x";
-    let turn = prompt("Enter who starts first('player' or 'computer'):");
-    console.log(computerRole);
-    return new gameInfo(turn, playerRole, computerRole);
-}
-
-function getComputerMove() {
-    function getRandomABC () {
-        let randomNum = Math.floor(Math.random() * 3);
-        
-        switch (randomNum) {
-            case 0:
-                return 'a';
-            case 1:
-                return 'b';
-            case 2:
-                return 'c';
-            default:
-                return 'a';
-        }
-    } 
-
-    function getRandom123 () {
-        let randomNum = Math.floor(Math.random() * 3)+1;
-        return randomNum.toString();
+function doComputerMove() {
+    let computerChoice = ""; 
+    function getRandomABC() {
+        const letters = ["a", "b", "c"];
+        const randomIndex = Math.floor(Math.random() * letters.length);
+        return letters[randomIndex];
     }
 
-    let computerMove = getRandomABC() + getRandom123();
-    console.log(computerMove);
-    if (Object.keys(board).includes(computerMove))
-        if (board[computerMove] === "")
-            return computerMove;
+    function getRandom123() {
+        const numbers = ["1", "2", "3"];
+        const randomIndex = Math.floor(Math.random() * numbers.length);
+        return numbers[randomIndex];
+    }
+
+    while (isViable(computerChoice) === false)
+        computerChoice = getRandomABC() + getRandom123();
+
+    board[computerChoice] = computerRole;
 }
 
-function getPlayerMove() {
-    const playerMove = prompt("Enter your move: ");
-    if (Object.keys(board).includes(playerMove))
-        if (board[playerMove] == "")
-            return playerMove;
+function isViable(choice) {
+    if (board[choice] === "") 
+        return true;
+    else
+        return false;
+}
+
+function playSingleRound() {
+    if (turn == "player") {
+        doPlayerMove();
+        turn = "computer";
+    }
+    else {
+        doComputerMove();
+        turn = "player";
+    }
 }
 
 function checkWinner() {
-    console.log("checkWinner()-beginning");
     // Checking through a1 //
     if (board.a1 !== "") {
         if (
             (board.a1 === board.a2 && board.a1 === board.a3) || //horizontal
             (board.a1 === board.b1 && board.a1 === board.c1) || //vertical 
             (board.a1 === board.b2 && board.a1 === board.c3)    //diagonal 1
-        ) {console.log("test-a1");
+        ) {
             return board.a1};
     }
     // Checking through b2 //
@@ -84,7 +82,7 @@ function checkWinner() {
             (board.b2 === board.b1 && board.b2 === board.b3) || //horizontal
             (board.b2 === board.a2 && board.b2 === board.c2) || //vertical
             (board.b2 === board.a1 && board.b2 === board.c3)    //diagonal 2
-        ) {console.log("test-b2");
+        ) {
             return board.b2};
     }
     // Checking through c3 // 
@@ -92,35 +90,29 @@ function checkWinner() {
         if (
             (board.c3 === board.c2 && board.c3 === board.c1) || //horizontal
             (board.c3 === board.b3 && board.c3 === board.a3)    //vertical
-        )  {console.log("test-c3");
+        )  {
             return board.c3};
     }
-    // Checking draw //
-    if (!(board.a1 && board.a2 && board.a3 &&
-            board.b1 && board.b2 && board.b3 &&
-            board.c1 && board.c2 && board.c3)) 
-        return "Draw";
+    // Checking draw // 
+    if ((board.a1 && board.a2 && board.a3 &&
+        board.b1 && board.b2 && board.b3 &&
+        board.c1 && board.c2 && board.c3)) 
+            return "Draw";
+
+}
+
+function play() {
+    while (checkWinner() === undefined) {
+        playSingleRound();
+    }
+    if (checkWinner() == playerRole)
+        console.log("Player Wins!");
+    else if (checkWinner () == computerRole)
+        console.log("Computer Wins!");
     else
-        return "No Winner";
-
+        return "Draw";
 }
-
-function playRound() {
-        let move = "";
-        if (game.turn === "computer") {
-            move = getComputerMove();
-            board[move] = game.computerRole;
-            game.turn = "player";
-        }
-
-        else if (game.turn === "player") {
-            move = getPlayerMove();
-            board[move] = game.playerRole;
-            game.turn = "computer";
-        }
-        console.log("in playRound()'s while, checkWinner() returns: " + checkWinner());
-}
+setGameInfo();
+play();
 
 console.log(board);
-//playGame();
-
